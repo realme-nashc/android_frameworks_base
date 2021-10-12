@@ -21,6 +21,7 @@ import android.os.Build;
 import android.util.Log;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
 /** @hide */
 public final class AttestationHooks {
@@ -29,6 +30,8 @@ public final class AttestationHooks {
     private static final String PROCESS_UNSTABLE = "com.google.android.gms.unstable";
     private static final String SAMSUNG = "com.samsung.android.";
     private static final String FAKE_FINGERPRINT = "google/angler/angler:6.0/MDB08L/2343525:user/release-keys";
+
+    private static volatile boolean sIsGms = false;
 
     private AttestationHooks() { }
 
@@ -54,6 +57,7 @@ public final class AttestationHooks {
 
         if (PACKAGE_GMS.equals(packageName)
                 && PROCESS_UNSTABLE.equals(processName)) {
+          sIsGms = true;
           setBuildField("MODEL", Build.MODEL + " ");
           setBuildField("FINGERPRINT", FAKE_FINGERPRINT);
         }
@@ -62,6 +66,18 @@ public final class AttestationHooks {
         if (packageName.startsWith(SAMSUNG)) {
           setBuildField("BRAND", "google");
           setBuildField("MANUFACTURER", "google");
+        }
+    }
+
+    private static boolean isCallerSafetyNet() {
+        return Arrays.stream(Thread.currentThread().getStackTrace())
+                .anyMatch(elem -> elem.getClassName().contains("DroidGuard"));
+    }
+
+    public static void onEngineGetCertificateChain() {
+        // Check stack for SafetyNet
+        if (sIsGms && isCallerSafetyNet()) {
+            throw new UnsupportedOperationException();
         }
     }
 }
