@@ -18,6 +18,7 @@ package com.android.internal.gmscompat;
 
 import android.app.Application;
 import android.os.Build;
+import android.os.Build.VERSION;
 import android.util.Log;
 
 import java.lang.reflect.Field;
@@ -51,6 +52,22 @@ public final class AttestationHooks {
         }
     }
 
+    private static void setVersionField(String key, Integer value) {
+        try {
+            // Unlock
+            Field field = Build.VERSION.class.getDeclaredField(key);
+            field.setAccessible(true);
+
+            // Edit
+            field.set(null, value);
+
+            // Lock
+            field.setAccessible(false);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            Log.e(TAG, "Failed to spoof Build." + key, e);
+        }
+    }
+
     public static void initApplicationBeforeOnCreate(Application app) {
         String packageName = app.getPackageName();
         String processName = Application.getProcessName();
@@ -60,6 +77,7 @@ public final class AttestationHooks {
           sIsGms = true;
           setBuildField("MODEL", Build.MODEL + " ");
           setBuildField("FINGERPRINT", FAKE_FINGERPRINT);
+          setVersionField("DEVICE_INITIAL_SDK_INT", Build.VERSION_CODES.S);
         }
 
         // Samsung apps like SmartThings, Galaxy Wearable crashes on samsung devices running AOSP
