@@ -30,7 +30,6 @@ public final class AttestationHooks {
     private static final String PACKAGE_GMS = "com.google.android.gms";
     private static final String PROCESS_UNSTABLE = "com.google.android.gms.unstable";
     private static final String SAMSUNG = "com.samsung.android.";
-    private static final String FAKE_FINGERPRINT = "google/angler/angler:6.0/MDB08L/2343525:user/release-keys";
 
     private static volatile boolean sIsGms = false;
 
@@ -75,9 +74,11 @@ public final class AttestationHooks {
         if (PACKAGE_GMS.equals(packageName)
                 && PROCESS_UNSTABLE.equals(processName)) {
           sIsGms = true;
-          setBuildField("MODEL", Build.MODEL + " ");
-          setBuildField("FINGERPRINT", FAKE_FINGERPRINT);
-          setVersionField("DEVICE_INITIAL_SDK_INT", Build.VERSION_CODES.S);
+          setBuildField("FINGERPRINT", "google/marlin/marlin:7.1.2/NJH47F/4146041:user/release-keys");
+          setBuildField("PRODUCT", "marlin");
+          setBuildField("DEVICE", "marlin");
+          setBuildField("MODEL", "Pixel XL");
+          setVersionField("DEVICE_INITIAL_SDK_INT", Build.VERSION_CODES.N_MR1);
         }
 
         // Samsung apps like SmartThings, Galaxy Wearable crashes on samsung devices running AOSP
