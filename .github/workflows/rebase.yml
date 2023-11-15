@@ -1,0 +1,33 @@
+name: Rebase
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+
+  workflow_dispatch:
+
+jobs:
+  rebase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --global user.email 'me@medzik.dev'
+          git config --global user.name 'M3DZIK'
+
+      - name: Fetch LineageOS repo
+        run: git fetch https://github.com/LineageOS/android_frameworks_base lineage-20.0
+
+      - name: Rebase
+        run: git rebase FETCH_HEAD
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          force: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
